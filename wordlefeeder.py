@@ -34,7 +34,8 @@ import csv
 import string
 
 # Check command line arguments
-# File name and optional --verbose argument. You'll get more feedback if you use that.
+# File name and
+# 	optional --verbose argument. You'll get more feedback if you use that.
 if len(sys.argv) == 3:
 	verbose = True
 	if sys.argv[1] == "--verbose": input_filename = sys.argv[2]
@@ -71,7 +72,9 @@ with open(input_filename, 'rU') as f_in:
 	for row in reader:
 		# read first column as word
 		word = row[0]
+		# If the "word" is actually a phrase, capitalise the individual words ...
 		word = string.capwords(word)
+		# ...and remove spaces so Wordle counts it as a whole.
 		word = word.replace(" ", "")
 		# for each other column, output to the relevant file as n repetitions of word
 		for i in range(1, len(f_outs), 1):
