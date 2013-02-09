@@ -90,7 +90,7 @@ title(main=paste("All earthquakes from", min(as.Date(timestamps)), "to", today, 
 
 # add legends
 magnitude.samples = seq(1,8,1)
-legend(0, -90, magnitude.samples, pt.cex=sqrt(exp(magnitude.samples))*magnifier, title="Magnitude (Richter Scale)", col=rgb(1,0,0,0.8), pch=19, xjust=0, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*4, adj=0.7)
+legend(0, -90, magnitude.samples, pt.cex=sqrt(exp(magnitude.samples))*magnifier, title="Magnitude", col=rgb(1,0,0,0.8), pch=19, xjust=0, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*4, adj=0.7)
 
 recency.samples = seq(0,7,1)
 legend(360, -90, recency.samples, pt.cex=sqrt(exp(5))*magnifier, title="Recency (days ago)", col=rgb(1,0,0,1-recency.samples/7), pch=19, xjust=1, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*2, adj=0.4)
