@@ -18,6 +18,7 @@
 # Downloads recent earthquake data from USGS's public repository, and plots it
 # on a world map in a format I find useful.  Originally a class exercise;
 # hopefully easy enough to tailor to your requirements
+# See http://www.flickr.com/photos/eldan/8456517923/in/photostream/lightbox/ for example output
 
 # USE:
 # Just run it, after installing the "mapdata" library if you don't already have that.
