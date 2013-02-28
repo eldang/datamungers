@@ -26,7 +26,7 @@
 
 # this bit is specific to my machine!  
 # Comment it out if I forget to, or change it to fit requirements
-setwd("/Users/eldan/Documents/data_files/")
+# setwd("/Users/eldan/Documents/data_files/earthquakes/")
 
 # set some constants to get the sizes of image elements right relative to each other
 imagewidth <- 1680 # using my monitor size as an OK default. The rest should scale reasonably from this
