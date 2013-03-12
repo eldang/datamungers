@@ -33,7 +33,12 @@
 # Simply call this script, with the optional argument --verbose if you want
 # debug output. It will prompt you for everything else it needs interactively.
 
-# TODO short term: make it take a list of stations at the beginning, so it can
+# TODO short term: decompose further. Specifically:
+#		make parse_row_NOAA that handles all the format-specific stuff
+#		separate output function, so it's easy to add JSON output too
+#		make sure it's handling errors by return non-zero
+
+# TODO medium term: make it take a list of stations at the beginning, so it can
 #		be left running unattended after that.
 # TODO long term: replace manual USAF & WBAN code input with a lookup that lets
 #		users just enter a station name, and gets the two codes from that file.
@@ -50,24 +55,12 @@ import time
 import csv
 import sys
 
-# Check for --verbose argument. You'll get more feedback if you use this.
-if len(sys.argv) == 1:
-	# then default to non-verbose
-	verbose = False
-elif sys.argv[1] == "--verbose":
-	verbose = True
-else:
-	verbose = False
 
-# I've assumed you'll want the same number of years for every station you
-#		download in one session, so we ask this before going into the main loop.
-maxyears = int(raw_input("How many years of data would you like to download " \
-	"for each station?\n"))
 
 # This function goes through each downloaded file line by line, and translates
 #		it from NOAA's idiosyncratic format to CSV with all the fields separated
 #		out rationally.
-def parsefile(f_in, f_out, stationname):
+def parsefile(f_in, f_out, stationname, verbose):
 	# Set up connections to input and output files. The CSV library also helps
 	#		with reading the input file, because we can treat it as space separated
 	#		with consecutive spaces being collapsed together
@@ -185,7 +178,7 @@ def parsefile(f_in, f_out, stationname):
 # This is the main control function. Each pass gets the user's input to pick a
 #		station, and then loops over years to download the relevant files, calling
 #		parsefile() to parse each one into standard CSV
-def downloadfiles(maxyears):
+def downloadfiles(maxyears, verbose):
 	# get parameters for and start constructing filenames
 	URLroot = "ftp://ftp.ncdc.noaa.gov/pub/data/gsod/" # base URL for all files
 	filesuffix = ".op.gz" # suffix for all the raw files
@@ -241,7 +234,7 @@ def downloadfiles(maxyears):
 					"NPrecipReportHours", "PrecipFlag", "SnowDepth", "Fog", "Rain", \
 					"Snow", "Hail", "Thunder", "Tornado"])
 			# This function does the actual ETL
-			parsefile(f_in, f_out, stationname)
+			parsefile(f_in, f_out, stationname, verbose)
 			# clean up after ourselves
 			f_in.close()
 			os.remove(str(year)+filesuffix)
@@ -259,15 +252,33 @@ def downloadfiles(maxyears):
 	f_out.close()
 
 
-# This is the main control loop. It repeatedly asks the user for station codes
-#		and calls downloadfiles() to download the requested data, until it's told
-#		to stop.
-goagain = "Y"
-while not (goagain.startswith('N') or goagain.startswith('n')):
-	downloadfiles(maxyears)
-	goagain = raw_input("Would you like to download another station (Y/N)?\n")
-	while not (goagain.startswith('N') or goagain.startswith('n') or
-		goagain.startswith('y') or goagain.startswith('Y')):
-		goagain = raw_input("Please help me, I am but a stupid computer. " \
-			"I can only understand Y or N as responses to this prompt. "
-			"Would you like to download another station (Y/N)?\n")
+def main (args):
+	# Check for --verbose argument. You'll get more feedback if you use this.
+	if len(args) == 0:
+		# then default to non-verbose
+		verbose = False
+	elif args[0] == "--verbose":
+		verbose = True
+	else:
+		verbose = False
+
+	# I've assumed you'll want the same number of years for every station you
+	#		download in one session, so we ask this before going into the main loop.
+	maxyears = int(raw_input("How many years of data would you like to download " \
+		"for each station?\n"))
+
+	# This is the main control loop. It repeatedly asks the user for station codes
+	#		and calls downloadfiles() to download the requested data, until it's told
+	#		to stop.
+	goagain = "Y"
+	while not (goagain.startswith('N') or goagain.startswith('n')):
+		downloadfiles(maxyears, verbose)
+		goagain = raw_input("Would you like to download another station (Y/N)?\n")
+		while not (goagain.startswith('N') or goagain.startswith('n') or
+			goagain.startswith('y') or goagain.startswith('Y')):
+			goagain = raw_input("Please help me, I am but a stupid computer. " \
+				"I can only understand Y or N as responses to this prompt. "
+				"Would you like to download another station (Y/N)?\n")
+	return 0
+
+if __name__ == '__main__': sys.exit(main(sys.argv[1:]))
