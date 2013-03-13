@@ -119,10 +119,11 @@ system(newdir)
 timestamps <- strptime(eData$DateTime, format="%Y-%m-%dT%H:%M:%S")
 recency <- as.double(difftime(now, timestamps))
 recency <- recency - min(recency)
+oldest <- ceiling(max(recency)-1)
 
-for (i in (ceiling(max(recency)-1)):0) {
+for (i in oldest:0) {
   inwindow <- ((recency >= i) & (recency <= i + datewindow*24))
   eData.window <- eData[inwindow,]
-  makeframe(eData.window, i)
+  makeframe(eData.window, oldest-i)
 }
 
