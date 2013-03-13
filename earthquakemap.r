@@ -24,12 +24,14 @@
 # Just run it, after installing the "mapdata" library if you don't already have that.
 # You'll also need the "mapproj" library if you want to use a projection other than the default Mercator, but you don't need it for the defaults I'm using
 
+# SEE ALSO: earthquakemaps.r, which creates a series of frames from this data, instead of one static image
+
 # this bit is specific to my machine!  
 # Comment it out if I forget to, or change it to fit requirements
 # setwd("/Users/eldan/Documents/data_files/earthquakes/")
 
 # set some constants to get the sizes of image elements right relative to each other
-imagewidth <- 1680 # using my monitor size as an OK default. The rest should scale reasonably from this
+imagewidth <- 1920 # using my monitor size as an OK default. The rest should scale reasonably from this
 aspectratio <- 1.6 # keep <2 to have space for titles
 magnifier <- imagewidth * 0.0002 # multiply point sizes by this to get something reasonably in scale with the image
 magnifier.text <- imagewidth / 800
@@ -37,8 +39,9 @@ magnifier.text <- imagewidth / 800
 # remind user where the files will end up
 print(paste("Current working directory is", getwd()))
 
-# set URL to download from. See http://earthquake.usgs.gov/earthquakes/feed/ for options
-sourceURL <- "http://earthquake.usgs.gov/earthquakes/feed/csv/1.0/week"
+# set URL to download from. See http://earthquake.usgs.gov/earthquakes/feed/ for USGS's direct options
+# or use the following for my scraperwiki store, which has been aggregating all M1+ events since Feb 12th 2013 (USGS only makes the latest week of this available by default at any one time)
+sourceURL <- "https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=csv&name=earthquakes&query=select+*+from+`swdata`&apikey="
 
 # Store today's date and construct local filename from it
 now <- Sys.time() # this is probably a bit belt-and-suspenders, but storing a specific moment to call "now" so that time delays don't get blurred by the time taken for the script to run
@@ -80,20 +83,21 @@ magnitude.adjusted <- sqrt(exp(eData$Magnitude))*magnifier
 timestamps <- strptime(eData$DateTime, format="%Y-%m-%dT%H:%M:%S")
 recency <- as.double(difftime(now, timestamps))
 recency <- recency - min(recency)
+maxdays <- max(recency) / 24
 recency <- 1 - recency / max(recency)
 
 # add points to the map for all earthquakes in the file
 points(longitude.adjusted, eData$Latitude, pch=19, cex=magnitude.adjusted, col=rgb(1, 0, 0, recency))
 
 # add title and source info
-title(main=paste("All earthquakes from", min(as.Date(timestamps)), "to", today, "(UTC)"), sub=paste("\nData source:",sourceURL), xlab=paste("Data downloaded at", now, "Seattle time\n"), cex.main=magnifier.text*1.25, cex.sub=magnifier.text*0.9, cex.lab=magnifier.text*0.9)
+title(main=paste("All earthquakes from", min(as.Date(timestamps)), "to", today, "(UTC)"), sub=paste("\nData source:",sourceURL), xlab=paste("Image generated at", now, "local time\n"), cex.main=magnifier.text*1.25, cex.sub=magnifier.text*0.9, cex.lab=magnifier.text*0.9)
 
 # add legends
 magnitude.samples = seq(1,8,1)
 legend(0, -90, magnitude.samples, pt.cex=sqrt(exp(magnitude.samples))*magnifier, title="Magnitude", col=rgb(1,0,0,0.8), pch=19, xjust=0, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*4, adj=0.7)
 
-recency.samples = seq(0,7,1)
-legend(360, -90, recency.samples, pt.cex=sqrt(exp(5))*magnifier, title="Recency (days ago)", col=rgb(1,0,0,1-recency.samples/7), pch=19, xjust=1, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*2, adj=0.4)
+recency.samples = seq(0,maxdays,ceiling(maxdays/7))
+legend(360, -90, recency.samples, pt.cex=sqrt(exp(5))*magnifier, title="Recency (days ago)", col=rgb(1,0,0,1-recency.samples/maxdays), pch=19, xjust=1, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*2, adj=0.4)
 
 
 dev.off()
