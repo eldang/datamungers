@@ -23,11 +23,13 @@
 # USE:
 # Just run it, after installing the "mapdata" library if you don't already have that.
 # You'll also need the "mapproj" library if you want to use a projection other than the default Mercator, but you don't need it for the defaults I'm using
+# The first few lines of code define constants that help tune the output
 
 # SEE ALSO: earthquakemap.r, which uses the same data but saves one image, containing all the earthquakes in the downloaded data.
 
-# TODO: make the timestamps for the maps' main labels specify the time as well as date
 # TODO: get the timestamps at top and bottom into the same damn time zone!
+
+# YouTube & Vimeo resolutions (at least when exporting from iMovie): 1920x1080, 1280x720, 720x540, 640x480
 
 # this bit is specific to my machine!  
 # Comment it out if I forget to, or change it to fit requirements
@@ -36,9 +38,12 @@
 # How many days do we want in one frame?
 datewindow = 7
 
-# set some constants to get the sizes of image elements right relative to each other
-imagewidth <- 800 # using my monitor size as an OK default. The rest should scale reasonably from this
-aspectratio <- 8/6 # keep <2 to have space for titles
+# How many hours do we want to increment between frames?
+stepsize = 1
+
+# set some constants to get the sizes of image elements right relative to each other  If you change the image size you may well have to tweak the others a little.
+imagewidth <- 1920 # using my monitor size as an OK default. The rest should scale reasonably from this
+aspectratio <- 1940/1080 # keep <2 to have space for titles
 magnifier <- imagewidth * 0.0002 # multiply point sizes by this to get something reasonably in scale with the image
 magnifier.text <- imagewidth / 800
 
@@ -89,22 +94,23 @@ makeframe <- function(eData, framenum) {
   
   # calculate appropriate brightness values for the points based on their recency
   timestamps <- strptime(eData$DateTime, format="%Y-%m-%dT%H:%M:%S")
-  recency <- as.double(difftime(now, timestamps))
+  recency <- as.double(difftime(now, timestamps, units="hours"))
   recency <- recency - min(recency)
-  recency <- 1 - recency / max(recency)
+  recency <- 1 - recency / (min(recency) + datewindow*24)
+  print(summary(recency))
   
   # add points to the map for all earthquakes in the file
   points(longitude.adjusted, eData$Latitude, pch=19, cex=magnitude.adjusted, col=rgb(1, 0, 0, recency))
   
-  # add title and source info
-  title(main=paste("All earthquakes from", min(as.Date(timestamps)), "to", max(as.Date(timestamps)), "(UTC)"), sub=paste("\nData source:",sourceURL), xlab=paste("Image generated at", now, "local time\n"), cex.main=magnifier.text*1.25, cex.sub=magnifier.text*0.9, cex.lab=magnifier.text*0.9)
-  
   # add legends
   magnitude.samples = seq(1,8,1)
-  legend(0, -90, magnitude.samples, pt.cex=sqrt(exp(magnitude.samples))*magnifier, title="Magnitude", col=rgb(1,0,0,0.8), pch=19, xjust=0, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*4, adj=0.7)
+  legend(0, -90, magnitude.samples, pt.cex=sqrt(exp(magnitude.samples))*magnifier, title="Magnitude", col=rgb(1,0,0,0.8), pch=19, xjust=0, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*2.6, adj=0.7)
   
   recency.samples = seq(0,datewindow,ceiling(datewindow/7))
-  legend(360, -90, recency.samples, pt.cex=sqrt(exp(5))*magnifier, title="Recency (days ago)", col=rgb(1,0,0,1-recency.samples/datewindow), pch=19, xjust=1, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*2, adj=0.4) 
+  legend(360, -90, recency.samples, pt.cex=sqrt(exp(5))*magnifier, title="Recency (days before snapshot)", col=rgb(1,0,0,1-recency.samples/datewindow), pch=19, xjust=1, yjust=0, bg=rgb(1,1,1,0.75), horiz=TRUE, cex=magnifier.text, text.width=magnifier.text*2, adj=0.4) 
+
+  # add title and source info
+  title(main=paste("M1 or greater earthquakes between", format(min(timestamps), "%b %d, %Y %H:%M"), "and", format(max(timestamps), "%b %d, %Y %H:%M"), "UTC"), xlab=paste("       Image generated at", format(Sys.time(),"%b %d, %Y %H:%M %Z"),"\nData URL:",sourceURL,"\nPrimary source: USGS http://earthquake.usgs.gov/earthquakes/feed/"), cex.main=magnifier.text*1.25, cex.sub=magnifier.text*0.9, cex.lab=magnifier.text*0.9)
   
   dev.off()
   
@@ -117,12 +123,17 @@ system(newdir)
 
 # prepare to subset the data to generate individual images
 timestamps <- strptime(eData$DateTime, format="%Y-%m-%dT%H:%M:%S")
-recency <- as.double(difftime(now, timestamps))
+print(summary(timestamps))
+recency <- as.double(difftime(now, timestamps, units="hours"))
+print(summary(recency))
 recency <- recency - min(recency)
+print(summary(recency))
 oldest <- ceiling(max(recency)-1)
 
-for (i in oldest:0) {
+for (i in seq(oldest, 0, 0-stepsize)) {
+# for (i in seq(240, 120, 0-stepsize)) {
   inwindow <- ((recency >= i) & (recency <= i + datewindow*24))
+  print(i)
   eData.window <- eData[inwindow,]
   makeframe(eData.window, oldest-i)
 }
