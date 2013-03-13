@@ -97,7 +97,7 @@ makeframe <- function(eData, framenum) {
   recency <- as.double(difftime(now, timestamps, units="hours"))
   recency <- recency - min(recency)
   recency <- 1 - recency / (min(recency) + datewindow*24)
-  print(summary(recency))
+#   print(summary(recency))
   
   # add points to the map for all earthquakes in the file
   points(longitude.adjusted, eData$Latitude, pch=19, cex=magnitude.adjusted, col=rgb(1, 0, 0, recency))
@@ -123,17 +123,17 @@ system(newdir)
 
 # prepare to subset the data to generate individual images
 timestamps <- strptime(eData$DateTime, format="%Y-%m-%dT%H:%M:%S")
-print(summary(timestamps))
+# print(summary(timestamps))
 recency <- as.double(difftime(now, timestamps, units="hours"))
-print(summary(recency))
+# print(summary(recency))
 recency <- recency - min(recency)
-print(summary(recency))
+# print(summary(recency))
 oldest <- ceiling(max(recency)-1)
 
 for (i in seq(oldest, 0, 0-stepsize)) {
 # for (i in seq(240, 120, 0-stepsize)) {
   inwindow <- ((recency >= i) & (recency <= i + datewindow*24))
-  print(i)
+#   print(i)
   eData.window <- eData[inwindow,]
   makeframe(eData.window, oldest-i)
 }
