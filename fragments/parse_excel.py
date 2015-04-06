@@ -6,6 +6,14 @@ __author__ = "Eldan Goldenberg, March 2015"
 #		http://eldan.co.uk/ ~ @eldang ~ eldang@gmail.com
 
 
+# TODO to make this more useful:
+# 1. break up that main function into a few parts
+# 2. comment, comment, comment
+# 3. add option to output .xlsx, which Tableau handles better
+# 4. make interim output optional
+# 5. make month_int_from_spanish() use just the first few letters, so more typos are handled gracefully
+
+
 
 import argparse
 import copy

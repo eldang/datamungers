@@ -21,6 +21,12 @@ earthquakemap.r & earthquakemaps.r : R with the "mapdata" package, which is avai
 * [NOAAdownloader.py](./NOAAdownloader.py) - downloads historical weather data from NOAA's archive and converts it from an idiosyncratic format into straightforward CSV.  See [http://eldan.co.uk/2012/10/rain-redux/](http://eldan.co.uk/2012/10/rain-redux/) for background and a use example.
 * [wordlefeeder.py](./wordlefeeder.py) - takes a CSV file with a list of word frequencies and outputs a text file with each word repeated the listed number of times. [Wordle](http://www.wordle.net/) needs the latter as input.
 
+#### See also
+
+Some related scripts get their own repository for one reason or another:
+
+* [osm_export_import](https://github.com/eldang/osm_export_import) - simple automation of the process of keeping a partial OpenStreetMap mirror up to date. Coming soon: export part, to export arbitrary regions and feature sets from these.
+
 ### Fragments
 
 These are generally highly specialised and poorly tested.  They're more likely to be useful to grab parts out of than in their entirety.  See the [fragments](./fragments) subdirectory for sources.
