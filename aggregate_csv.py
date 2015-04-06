@@ -17,6 +17,10 @@ Non-numeric entries are simply dropped.
 
 Note that it attempts to sort the output data, but only does so lexically.
 This works poorly for non-ISO format dates.
+
+IMPORTANT: because this aggregates with a simple mean, outliers in the source
+data can skew averages terribly. Make sure you first clean up outliers and any
+weird NULL placeholders in your dataset.
 '''
 
 import argparse
