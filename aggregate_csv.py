@@ -14,6 +14,9 @@ aggregated by date:
 	./aggregate_by_time.py inputfile outputfile timecolumn daycolumn
 
 Non-numeric entries are simply dropped.
+
+Note that it attempts to sort the output data, but only does so lexically.
+This works poorly for non-ISO format dates.
 '''
 
 import argparse
