@@ -37,6 +37,7 @@ These are generally highly specialised and poorly tested.  They're more likely t
 
 Coming soon:
 
+* clear_out_of_range.py - removes values that are flagged as suspect from a dataset
 * Hour averager: takes a temporal dataset and produces the average across all days for each time of day.
 * Day averager: takes a temporal dataset and produces the average values for each day.
 
