@@ -18,6 +18,7 @@ earthquakemap.r & earthquakemaps.r : R with the "mapdata" package, which is avai
 
 Most of these have additional explanation at the top of the file, clarifying what they were made for and how to use them.
 
+* [aggregate_csv.py](./aggregate_csv.py) - takes a CSV and returns a summary of it, averaged across one field, aggregated by another (e.g. averaging the readings for each time of day across all days).
 * [clear_out_of_range.py](./clear_out_of_range.py) - takes a CSV in which some fields are market as suspect by a metadata column, and removes all of those values so only data that the provider trusts is left.
 * [earthquakemap.r](./earthquakemap.r) - downloads a snapshot of recent earthquake data from USGS and plots it on a world map.
 * [earthquakemaps.r](./earthquakemaps.r) - version of the above that makes a series of frames to be animated, rather than one image containing all the data.
@@ -35,12 +36,3 @@ Some related scripts get their own repository for one reason or another:
 These are generally highly specialised and poorly tested.  They're more likely to be useful to grab parts out of than in their entirety.  See the [fragments](./fragments) subdirectory for sources.
 
 * [parse_excel.py](./fragments/parse_excel.py) - finds all `.xls` files in a directory and its subdirectories, parse them all according to some assumptions about structure, and spit out a huge combined CSV and a smaller one that does some processing on the contents. *The specific assumptions were for a particular dataset, but I expect to recycle a lot of the parts of this, and work it into a more modular, tinkerable form over time*
-
-### Work in progress
-
-Coming soon:
-
-* Hour averager: takes a temporal dataset and produces the average across all days for each time of day.
-* Day averager: takes a temporal dataset and produces the average values for each day.
-
-Also coming soon: a better explanation of what the above two do.
