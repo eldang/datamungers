@@ -100,8 +100,8 @@ def get_args():
 
 # optional argument
 	parser.add_argument("-s", "--separator", help="the character that separates values within the out of range column. Default is ';'.", nargs='?', default=';')
-	args = parser.parse_args()
-	return args
+
+	return parser.parse_args()
 
 
 
