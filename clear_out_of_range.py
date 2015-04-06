@@ -91,7 +91,7 @@ def print_with_timestamp(msg):
 
 
 def get_args():
-	parser = argparse.ArgumentParser(description="Import and/or update OSM data.")
+	parser = argparse.ArgumentParser(description="Clear values marked as out of range in an input file.")
 
 # positional arguments
 	parser.add_argument("input_file", help="required argument: the file we'll be cleaning.")
