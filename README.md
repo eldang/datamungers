@@ -16,6 +16,9 @@ earthquakemap.r & earthquakemaps.r : R with the "mapdata" package, which is avai
 
 ### Scripts that should be usable out of the box
 
+Most of these have additional explanation at the top of the file, clarifying what they were made for and how to use them.
+
+* [clear_out_of_range.py](./clear_out_of_range.py) - takes a CSV in which some fields are market as suspect by a metadata column, and removes all of those values so only data that the provider trusts is left.
 * [earthquakemap.r](./earthquakemap.r) - downloads a snapshot of recent earthquake data from USGS and plots it on a world map.
 * [earthquakemaps.r](./earthquakemaps.r) - version of the above that makes a series of frames to be animated, rather than one image containing all the data.
 * [NOAAdownloader.py](./NOAAdownloader.py) - downloads historical weather data from NOAA's archive and converts it from an idiosyncratic format into straightforward CSV.  See [http://eldan.co.uk/2012/10/rain-redux/](http://eldan.co.uk/2012/10/rain-redux/) for background and a use example.
@@ -37,7 +40,6 @@ These are generally highly specialised and poorly tested.  They're more likely t
 
 Coming soon:
 
-* clear_out_of_range.py - removes values that are flagged as suspect from a dataset
 * Hour averager: takes a temporal dataset and produces the average across all days for each time of day.
 * Day averager: takes a temporal dataset and produces the average values for each day.
 
