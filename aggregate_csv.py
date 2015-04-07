@@ -8,10 +8,10 @@ This is a tool to aggregate data by one dimension across another.
 
 For example: turn a time-series into an "average day" by averaging across all
 days, aggregated by time of day:
-	./aggregate_by_time.py inputfile outputfile daycolumn timecolumn
+	./aggregate_csv.py inputfile outputfile daycolumn timecolumn
 Or turn each day into its averages, by averaging across all times,
 aggregated by date:
-	./aggregate_by_time.py inputfile outputfile timecolumn daycolumn
+	./aggregate_csv.py inputfile outputfile timecolumn daycolumn
 
 Non-numeric entries are simply dropped.
 
