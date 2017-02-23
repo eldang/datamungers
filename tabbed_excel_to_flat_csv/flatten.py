@@ -56,9 +56,20 @@ def main():
 
 def process_job_list(inputdir, outputdir, joblist):
 	filecount = 0
-	print(inputdir)
-	print(outputdir)
-	print(joblist)
+	print_if_verbose("Opening " + joblist)
+	with open(joblist) as jobsfile:
+		jobs = csv.DictReader(jobsfile)
+		for job in jobs:
+			ext = os.path.splitext(job["filename"])[1]
+			print(ext)
+			if ext == ".xls":
+#				inputdata = process_xls(inputdir, job)
+				filecount +=1
+			elif ext == ".xlsx":
+				print("XLSX not implemented yet, skipping " + job["filename"])
+			else:
+				print("File extension " + ext + " not recognised, skipping row:")
+				print(job)
 	return filecount
 
 
