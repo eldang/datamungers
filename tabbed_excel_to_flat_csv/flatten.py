@@ -10,7 +10,7 @@ __author__ = "Eldan Goldenberg for Manastash Mapping, February 2017"
 # header: row number (A = 1) of the row to use as a header - simply lets us skip rows if needed
 # subheader: optional row number (A = 1) of a subheader row.
 #		If a file has a subheader, the output CSV will have column headings in the
-#		format: headervalue_subheadervalue
+#		format: headervalue: subheadervalue
 # tabs: column name for the text in tab names, so that their data is preserved
 #		in the flat output CSV.	 Leave blank to only process the first tab
 # column_wrap: optional number of columns after which the data wraps around
@@ -61,10 +61,11 @@ def process_job_list(inputdir, outputdir, joblist):
 		jobs = csv.DictReader(jobsfile)
 		for job in jobs:
 			ext = os.path.splitext(job["filename"])[1]
+			job["filename"] = os.path.join(inputdir, job["filename"])
 			print(ext)
 			if ext == ".xls":
-#				inputdata = process_xls(inputdir, job)
-				filecount +=1
+				inputdata = process_xls(job)
+				filecount += 1
 			elif ext == ".xlsx":
 				print("XLSX not implemented yet, skipping " + job["filename"])
 			else:
@@ -73,6 +74,59 @@ def process_job_list(inputdir, outputdir, joblist):
 	return filecount
 
 
+
+def process_xls(job):
+	print_with_timestamp("Processing " + job["filename"])
+	ntabs = 0
+	data = {
+		'headers': [],
+		'rows': {}
+	}
+	with xlrd.open_workbook(job["filename"]) as workbook:
+		if job["tabs"] == "":
+			data = process_xls_sheet(workbook.sheet_by_index(0), data, job)
+			ntabs = 1
+		else:
+			for sheet in workbook.sheets():
+				if ntabs < 1:
+					data = process_xls_sheet(sheet, data, job)
+					ntabs += 1
+	print_with_timestamp(str(ntabs) + " tab[s] parsed")
+
+
+
+def process_xls_sheet(sheet, data, job):
+	header = int(job["header"]) - 1
+	if job["subheader"] == "":
+		subheader = None
+	else:
+		subheader = int(job["subheader"]) - 1
+	if job["column_wrap"] == "":
+		ncols = sheet.ncols
+	else:
+		ncols = int(job["column_wrap"])
+	prev_head = ""
+	col_names = []
+
+	for col in range(0, ncols):
+		if subheader is None:
+			val = sheet.cell_value(header, col)
+		else:
+			if sheet.cell_value(header, col) != "":
+				prev_head = sheet.cell_value(header, col)
+			if sheet.cell_value(subheader, col) == "":
+				val = prev_head
+			else:
+				print(subheader, col, prev_head)
+				val = prev_head + ": " + str(sheet.cell_value(subheader, col))
+		if val not in col_names:
+			col_names.append(val)
+		if val not in data["headers"]:
+			data["headers"].append(val)
+
+	print(data["headers"])
+
+	return data
 
 
 
@@ -97,7 +151,7 @@ def print_if_verbose(msg):
 
 
 def print_with_timestamp(msg):
-	print("	 " + time.ctime() + ": " + str(msg))
+	print(time.ctime() + ": " + str(msg))
 	sys.stdout.flush()
 # explicitly flushing stdout makes sure that a .out file stays up to date
 # otherwise it can be hard to keep track of whether a background job is hanging
@@ -108,7 +162,7 @@ def print_with_timestamp(msg):
 def elapsed_time(starttime):
 	seconds = time.time() - starttime
 	if seconds < 1:
-		return "Less than one second"
+		return "less than one second"
 	hours = int(seconds / 60 / 60)
 	minutes = int(seconds / 60 - hours * 60)
 	seconds = int(seconds - minutes * 60 - hours * 60 * 60)
