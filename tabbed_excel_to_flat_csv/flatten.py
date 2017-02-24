@@ -43,6 +43,8 @@ def main():
 
 	inputdir = os.path.dirname(args.joblist)
 	outputdir = os.path.join(inputdir, output_subdir)
+	if not os.path.isdir(outputdir):
+		os.mkdir(outputdir)
 
 	filecount = process_job_list(inputdir, outputdir, args.joblist)
 
@@ -61,10 +63,11 @@ def process_job_list(inputdir, outputdir, joblist):
 		jobs = csv.DictReader(jobsfile)
 		for job in jobs:
 			ext = os.path.splitext(job["filename"])[1]
-			job["filename"] = os.path.join(inputdir, job["filename"])
+			job["inputfile"] = os.path.join(inputdir, job["filename"])
+			outputfile = os.path.join(outputdir, job["filename"].replace(ext, ".csv"))
 			print(ext)
 			if ext == ".xls":
-				inputdata = process_xls(job)
+				write_csv(process_xls(job), outputfile)
 				filecount += 1
 			elif ext == ".xlsx":
 				print("XLSX not implemented yet, skipping " + job["filename"])
@@ -80,31 +83,46 @@ def process_xls(job):
 	ntabs = 0
 	data = {
 		'headers': [],
-		'rows': {}
+		'rows': []
 	}
-	with xlrd.open_workbook(job["filename"]) as workbook:
+	with xlrd.open_workbook(job["inputfile"]) as workbook:
 		if job["tabs"] == "":
-			data = process_xls_sheet(workbook.sheet_by_index(0), data, job)
+			data = read_xls_sheet(workbook.sheet_by_index(0), data, job)
 			ntabs = 1
 		else:
+			data["headers"].append(job["tabs"])
 			for sheet in workbook.sheets():
-				if ntabs < 1:
-					data = process_xls_sheet(sheet, data, job)
+				if job["skip_tabs"] != "":
+					if job["skip_tabs"] == 1:
+						job["skip_tabs"] = ""
+					else:
+						job["skip_tabs"] -= 1
+				else:
+					data = read_xls_sheet(sheet, data, job)
 					ntabs += 1
-	print_with_timestamp(str(ntabs) + " tab[s] parsed")
+	print_with_timestamp(str(ntabs) + " tab[s] read")
+	return data
 
 
 
-def process_xls_sheet(sheet, data, job):
-	header = int(job["header"]) - 1
+def read_xls_sheet(sheet, data, job):
+	header = int(job["header"]) - 1 # -1 because xlrd is 0-indexed while Excel itself is 1-indexed in the UI
 	if job["subheader"] == "":
 		subheader = None
+		firstrow = int(job["header"])
 	else:
 		subheader = int(job["subheader"]) - 1
+		firstrow = int(job["subheader"])
+
 	if job["column_wrap"] == "":
 		ncols = sheet.ncols
+		nframes = 1
 	else:
 		ncols = int(job["column_wrap"])
+		if sheet.ncols % ncols > 0:
+			nframes = sheet.ncols // ncols + 1
+		else:
+			nframes = sheet.ncols // ncols
 	prev_head = ""
 	col_names = []
 
@@ -117,16 +135,34 @@ def process_xls_sheet(sheet, data, job):
 			if sheet.cell_value(subheader, col) == "":
 				val = prev_head
 			else:
-				print(subheader, col, prev_head)
 				val = prev_head + ": " + str(sheet.cell_value(subheader, col))
-		if val not in col_names:
-			col_names.append(val)
-		if val not in data["headers"]:
+		col_names.append(val)
+
+	for val in col_names:
+		if val != "" and val not in data["headers"]:
 			data["headers"].append(val)
 
-	print(data["headers"])
+	for frame in range(0, nframes):
+		for row in range(firstrow, sheet.nrows):
+			content = {}
+			if job["tabs"] != "":
+				content[job["tabs"]] = sheet.name
+			for col in range(0, len(col_names)):
+				if col_names[col] != "":
+					content[col_names[col]] = sheet.cell_value(row, col + frame * ncols)
+			#print(content)
+			data["rows"].append(content)
 
 	return data
+
+
+
+def write_csv(data, filename):
+	with open(filename, 'w') as outfile:
+		writer = csv.DictWriter(outfile, fieldnames=data["headers"])
+		writer.writeheader()
+		for row in data["rows"]:
+			writer.writerow(row)
 
 
 
