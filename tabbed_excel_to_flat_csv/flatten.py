@@ -23,11 +23,11 @@ __author__ = "Eldan Goldenberg for Manastash Mapping, February 2017"
 
 import argparse
 import csv
+from openpyxl import load_workbook	# for newer-style .xlsx files
 import os
 import sys
 import time
-import xlrd	 # Python Excel reader. pip install xlrd. Documentation at https://secure.simplistix.co.uk/svn/xlrd/trunk/xlrd/doc/xlrd.html?p=4966
-
+import xlrd	 # for old-style .xls files
 
 
 verbose = True
@@ -67,7 +67,7 @@ def process_job_list(inputdir, outputdir, joblist):
 			outputfile = os.path.join(outputdir, job["filename"].replace(ext, ".csv"))
 			print(ext)
 			if ext == ".xls":
-				write_csv(process_xls(job), outputfile)
+				write_csv(read_xls(job), outputfile)
 				filecount += 1
 			elif ext == ".xlsx":
 				print("XLSX not implemented yet, skipping " + job["filename"])
@@ -78,7 +78,7 @@ def process_job_list(inputdir, outputdir, joblist):
 
 
 
-def process_xls(job):
+def read_xls(job):
 	print_with_timestamp("Processing " + job["filename"])
 	ntabs = 0
 	data = {
