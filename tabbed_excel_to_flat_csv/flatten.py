@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 # Converts multiple-tab Excel files into flat CSVs, preserving unicode
-__author__ = "Eldan Goldenberg for Manastash Mapping, February 2017"
+__author__ = "Eldan Goldenberg, February 2017"
 # http://eldan.co.uk/ ~ @eldang ~ eldang@gmail.com
 #
 # Usage: put a job list CSV like the enclosed files_to_process.csv
