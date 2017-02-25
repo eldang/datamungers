@@ -23,11 +23,11 @@ __author__ = "Eldan Goldenberg for Manastash Mapping, February 2017"
 
 import argparse
 import csv
-from openpyxl import load_workbook	# for newer-style .xlsx files
+import openpyxl	# for newer-style .xlsx files
 import os
 import sys
 import time
-import xlrd	 # for old-style .xls files
+import xlrd	 		# for old-style .xls files
 
 
 verbose = True
@@ -65,12 +65,12 @@ def process_job_list(inputdir, outputdir, joblist):
 			ext = os.path.splitext(job["filename"])[1]
 			job["inputfile"] = os.path.join(inputdir, job["filename"])
 			outputfile = os.path.join(outputdir, job["filename"].replace(ext, ".csv"))
-			print(ext)
 			if ext == ".xls":
 				write_csv(read_xls(job), outputfile)
 				filecount += 1
 			elif ext == ".xlsx":
-				print("XLSX not implemented yet, skipping " + job["filename"])
+				write_csv(read_xlsx(job), outputfile)
+				filecount += 1
 			else:
 				print("File extension " + ext + " not recognised, skipping row:")
 				print(job)
@@ -149,11 +149,97 @@ def read_xls_sheet(sheet, data, job):
 				content[job["tabs"]] = sheet.name
 			for col in range(0, len(col_names)):
 				if col_names[col] != "":
-					content[col_names[col]] = sheet.cell_value(row, col + frame * ncols)
+					content[col_names[col]] = clean_value(sheet.cell_value(row, col + frame * ncols), True)
 			#print(content)
 			data["rows"].append(content)
 
 	return data
+
+
+
+def read_xlsx(job):
+	print_with_timestamp("Processing " + job["filename"])
+	ntabs = 0
+	data = {
+		'headers': [],
+		'rows': []
+	}
+	wb = openpyxl.load_workbook(
+		job["inputfile"],
+		read_only=True,
+		keep_vba=False,
+		guess_types=True,
+		data_only=True,
+		keep_links=False
+	)
+	print(wb.get_sheet_names())
+	if job["tabs"] == "":
+		data = read_xlsx_sheet(wb[wb.get_sheet_names()[0]], data, job)
+		ntabs = 1
+	else:
+		data["headers"].append(job["tabs"])
+		sheets = wb.get_sheet_names()
+		if job["skip_tabs"] == "":
+			job["skip_tabs"] = 0
+		for i in range(int(job["skip_tabs"]), len(sheets)):
+			data = read_xlsx_sheet(wb[sheets[i]], data, job, sheets[i])
+			ntabs += 1
+	wb.close()
+	print_with_timestamp(str(ntabs) + " tab[s] read")
+	return data
+
+
+
+def read_xlsx_sheet(sheet, data, job, sheetname=""):
+	header = int(job["header"])
+	if job["subheader"] == "":
+		subheader = None
+		firstrow = int(job["header"]) + 1
+	else:
+		subheader = int(job["subheader"])
+		firstrow = int(job["subheader"]) + 1
+
+	if job["column_wrap"] == "":
+		ncols = sheet.max_column
+		nframes = 1
+	else:
+		ncols = int(job["column_wrap"])
+		if sheet.max_column % ncols > 0:
+			nframes = sheet.max_column // ncols + 1
+		else:
+			nframes = sheet.max_column // ncols
+	prev_head = ""
+	col_names = []
+
+	for col in range(1, ncols + 1): # openpyxl is 1-indexed
+		if subheader is None:
+			val = sheet.cell(row=header, column=col).value
+		else:
+			if sheet.cell(row=header, column=col).value != None:
+				prev_head = sheet.cell(row=header, column=col).value
+			if sheet.cell(row=subheader, column=col).value == None:
+				val = prev_head
+			else:
+				val = prev_head + ": " + str(sheet.cell(row=subheader, column=col).value)
+		col_names.append(val)
+
+	for val in col_names:
+		if val is not None and val not in data["headers"]:
+			data["headers"].append(val)
+
+	for frame in range(0, nframes):
+		for rownum in range(firstrow, sheet.max_row + 1):
+			content = {}
+			if job["tabs"] != "":
+				content[job["tabs"]] = sheetname
+			for col in range(0, len(col_names)):
+				if col_names[col] is not None:
+					content[col_names[col]] = clean_value(sheet.cell(row=rownum, column=col+frame*ncols+1).value, True)
+			data["rows"].append(content)
+
+	return data
+
+
 
 
 
@@ -163,6 +249,21 @@ def write_csv(data, filename):
 		writer.writeheader()
 		for row in data["rows"]:
 			writer.writerow(row)
+
+
+
+# "turkish" in this a special case for routine ways Turkish characters:
+# İ, Ṣ, ğ, ı & ṣ
+# get mangled
+def clean_value(val, turkish=False):
+	if val is None:
+		return ""
+	elif turkish:
+		return str(val).replace('Ý','İ').replace('Þ', 'Ṣ').replace('ð','ğ').replace('ý', 'ı').replace('þ', 'ṣ')
+	else:
+		return val
+
+
 
 
 
