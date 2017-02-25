@@ -14,9 +14,7 @@ __author__ = "Eldan Goldenberg for Manastash Mapping, February 2017"
 # tabs: column name for the text in tab names, so that their data is preserved
 #		in the flat output CSV.	 Leave blank to only process the first tab
 # column_wrap: optional number of columns after which the data wraps around
-# special_handling: optional argument; values defined so far:
-#		"transpose" will make a new row for each individual cell, with just 3
-#			columns: column heading, row heading, value
+# special_handling: NOT IMPLEMENTED
 # notes: optional human-readable notes, ignored by the script
 #
 # Then simply: flatten.py path/to/joblist.csv
