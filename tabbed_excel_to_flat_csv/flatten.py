@@ -148,7 +148,6 @@ def read_xls_sheet(sheet, data, job):
 			for col in range(0, len(col_names)):
 				if col_names[col] != "":
 					content[col_names[col]] = clean_value(sheet.cell_value(row, col + frame * ncols), True)
-			#print(content)
 			data["rows"].append(content)
 
 	return data
@@ -170,7 +169,7 @@ def read_xlsx(job):
 		data_only=True,
 		keep_links=False
 	)
-	print(wb.get_sheet_names())
+
 	if job["tabs"] == "":
 		data = read_xlsx_sheet(wb[wb.get_sheet_names()[0]], data, job)
 		ntabs = 1
