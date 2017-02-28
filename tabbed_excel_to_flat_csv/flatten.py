@@ -256,7 +256,7 @@ def clean_value(val, turkish=False):
 	if val is None:
 		return ""
 	elif turkish:
-		return str(val).replace('Ý','İ').replace('Þ', 'Ṣ').replace('ð','ğ').replace('ý', 'ı').replace('þ', 'ṣ')
+		return str(val).replace('Ý','İ').replace('Þ', 'Ş').replace('ð','ğ').replace('ý', 'ı').replace('þ', 'ş')
 	else:
 		return val
 
