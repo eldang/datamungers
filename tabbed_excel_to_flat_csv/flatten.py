@@ -179,6 +179,7 @@ def read_xlsx(job):
 		if job["skip_tabs"] == "":
 			job["skip_tabs"] = 0
 		for i in range(int(job["skip_tabs"]), len(sheets)):
+			print_if_verbose("Reading sheet: '" + sheets[i] + "'")
 			data = read_xlsx_sheet(wb[sheets[i]], data, job, sheets[i])
 			ntabs += 1
 	wb.close()
