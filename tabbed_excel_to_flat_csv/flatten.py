@@ -39,7 +39,7 @@ def main():
 	print_with_timestamp("Starting run.")
 	starttime = time.time()
 
-	inputdir = os.path.dirname(args.joblist)
+	inputdir = os.path.abspath(os.path.dirname(args.joblist))
 	outputdir = os.path.join(inputdir, output_subdir)
 	if not os.path.isdir(outputdir):
 		os.mkdir(outputdir)
@@ -62,7 +62,10 @@ def process_job_list(inputdir, outputdir, joblist):
 		for job in jobs:
 			ext = os.path.splitext(job["filename"])[1]
 			job["inputfile"] = os.path.join(inputdir, job["filename"])
-			outputfile = os.path.join(outputdir, job["filename"].replace(ext, ".csv"))
+			outputfile = os.path.join(
+					outputdir,
+					os.path.basename(job["filename"]).replace(ext, ".csv")
+			)
 			if ext == ".xls":
 				write_csv(read_xls(job), outputfile)
 				filecount += 1
