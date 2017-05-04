@@ -166,7 +166,7 @@ def read_xlsx(job):
 	}
 	wb = openpyxl.load_workbook(
 		job["inputfile"],
-		read_only=True,
+		read_only=False,
 		keep_vba=False,
 		guess_types=True,
 		data_only=True,
@@ -235,7 +235,12 @@ def read_xlsx_sheet(sheet, data, job, sheetname=""):
 				content[job["tabs"]] = sheetname
 			for col in range(0, len(col_names)):
 				if col_names[col] is not None:
-					content[col_names[col]] = clean_value(sheet.cell(row=rownum, column=col+frame*ncols+1).value, True)
+					coord = sheet.cell(row=rownum, column=col+frame*ncols+1).coordinate
+					val = sheet.cell(row=rownum, column=col+frame*ncols+1).value
+					# if we have a merged set of cells, use the first value in it
+					if coord in sheet.merged_cells and val is None:
+						val = data["rows"][-1][col_names[col]]
+					content[col_names[col]] = clean_value(val, True)
 			data["rows"].append(content)
 
 	return data
