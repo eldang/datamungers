@@ -228,6 +228,8 @@ def read_xlsx_sheet(sheet, data, job, sheetname=""):
 		if val is not None and val not in data["headers"]:
 			data["headers"].append(val)
 
+	merge_starts = [x.split(":")[0] for x in sheet.merged_cell_ranges]
+
 	for frame in range(0, nframes):
 		for rownum in range(firstrow, sheet.max_row + 1):
 			content = {}
@@ -236,9 +238,10 @@ def read_xlsx_sheet(sheet, data, job, sheetname=""):
 			for col in range(0, len(col_names)):
 				if col_names[col] is not None:
 					coord = sheet.cell(row=rownum, column=col+frame*ncols+1).coordinate
+					coord_above = sheet.cell(row=rownum-1, column=col+frame*ncols+1).coordinate
 					val = sheet.cell(row=rownum, column=col+frame*ncols+1).value
-					# if we have a merged set of cells, use the first value in it
-					if coord in sheet.merged_cells and val is None:
+					# if we have a merged set of cells, use the first value for all of them
+					if coord in sheet.merged_cells and coord not in merge_starts:
 						val = data["rows"][-1][col_names[col]]
 					content[col_names[col]] = clean_value(val, True)
 			data["rows"].append(content)
