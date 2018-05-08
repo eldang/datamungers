@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 # Converts multiple-tab Excel files into flat CSVs, preserving unicode
-__author__ = "Eldan Goldenberg, February 2017"
+__author__ = "Eldan Goldenberg, February 2017 - May 2018"
 # http://eldan.co.uk/ ~ @eldang ~ eldang@gmail.com
 #
 # Usage: put a job list CSV like the enclosed files_to_process.csv
@@ -178,7 +178,7 @@ def read_xlsx(job):
 		ntabs = 1
 	else:
 		data["headers"].append(job["tabs"])
-		sheets = wb.get_sheet_names()
+		sheets = wb.sheetnames
 		if job["skip_tabs"] == "":
 			job["skip_tabs"] = 0
 		for i in range(int(job["skip_tabs"]), len(sheets)):
@@ -228,7 +228,7 @@ def read_xlsx_sheet(sheet, data, job, sheetname=""):
 		if val is not None and val not in data["headers"]:
 			data["headers"].append(val)
 
-	merge_starts = [x.split(":")[0] for x in sheet.merged_cell_ranges]
+	merge_starts = [x.split(":")[0] for x in str(sheet.merged_cells)]
 
 	for frame in range(0, nframes):
 		for rownum in range(firstrow, sheet.max_row + 1):
